@@ -1,0 +1,45 @@
+.watchlist-grid { display: flex; flex-direction: column; gap: 14px; }
+
+.wl-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 14px 20px;
+}
+
+.wl-poster {
+  flex-shrink: 0;
+  width: 54px;
+  height: 80px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--bg-secondary);
+}
+.wl-poster img { width: 100%; height: 100%; object-fit: cover; }
+.wl-no-poster {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem;
+}
+
+.wl-info { flex: 1; min-width: 0; }
+.wl-title {
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--text-primary);
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 4px;
+  transition: color var(--transition);
+}
+.wl-title:hover { color: var(--accent); }
+.wl-year { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 6px; }
+.wl-added { font-size: 0.78rem; color: var(--text-muted); }
+
+.wl-remove {
+  flex-shrink: 0;
+  padding: 8px 14px;
+  font-size: 0.85rem;
+}
