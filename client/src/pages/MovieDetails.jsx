@@ -43,6 +43,16 @@ const MovieDetails = () => {
   const [submitting, setSub]    = useState(false);
   const [reviewError, setRevErr]= useState('');
 
+  // ── Diary log state ──
+  const [showLogModal, setShowLogModal] = useState(false);
+  const [logDate, setLogDate]           = useState(new Date().toISOString().slice(0, 10));
+  const [logRating, setLogRating]       = useState(0);
+  const [logReview, setLogReview]       = useState('');
+  const [logRewatch, setLogRewatch]     = useState(false);
+  const [logSubmitting, setLogSub]      = useState(false);
+  const [logError, setLogError]         = useState('');
+  const [logSuccess, setLogSuccess]     = useState(false);
+
   useEffect(() => {
     const fetchAll = async () => {
       setLoading(true);
@@ -81,6 +91,40 @@ const MovieDetails = () => {
         setInWatchlist(true);
       }
     } finally { setWlLoading(false); }
+  };
+
+  // ── Log to Diary ──
+  const openLogModal = () => {
+    setLogDate(new Date().toISOString().slice(0, 10));
+    setLogRating(0);
+    setLogReview('');
+    setLogRewatch(false);
+    setLogError('');
+    setLogSuccess(false);
+    setShowLogModal(true);
+  };
+
+  const submitLog = async (e) => {
+    e.preventDefault();
+    setLogSub(true);
+    setLogError('');
+    try {
+      await api.post('/diary', {
+        tmdbId: movie.id,
+        movieTitle: movie.title,
+        posterPath: movie.poster_path || '',
+        watchedOn: logDate,
+        rating: logRating || null,
+        review: logReview,
+        rewatch: logRewatch,
+      });
+      setLogSuccess(true);
+      setTimeout(() => setShowLogModal(false), 1200);
+    } catch (err) {
+      setLogError(err.response?.data?.message || 'Failed to log film');
+    } finally {
+      setLogSub(false);
+    }
   };
 
   const submitReview = async (e) => {
@@ -154,16 +198,25 @@ const MovieDetails = () => {
 
             <div className="detail-actions">
               {user ? (
-                <button
-                  id="watchlist-btn"
-                  className={`btn ${inWatchlist ? 'btn-danger' : 'btn-ghost'}`}
-                  onClick={toggleWatchlist}
-                  disabled={wlLoading}
-                >
-                  {inWatchlist ? '✕ Remove from Watchlist' : '+ Add to Watchlist'}
-                </button>
+                <>
+                  <button
+                    id="log-btn"
+                    className="btn btn-primary"
+                    onClick={openLogModal}
+                  >
+                    📖 Log to Diary
+                  </button>
+                  <button
+                    id="watchlist-btn"
+                    className={`btn ${inWatchlist ? 'btn-danger' : 'btn-ghost'}`}
+                    onClick={toggleWatchlist}
+                    disabled={wlLoading}
+                  >
+                    {inWatchlist ? '✕ Remove from Watchlist' : '+ Add to Watchlist'}
+                  </button>
+                </>
               ) : (
-                <Link to="/login" className="btn btn-ghost">Sign in to add watchlist</Link>
+                <Link to="/login" className="btn btn-ghost">Sign in to track films</Link>
               )}
             </div>
           </div>
@@ -250,6 +303,75 @@ const MovieDetails = () => {
           </div>
         </section>
       </div>
+
+      {/* ── Log to Diary Modal ── */}
+      {showLogModal && (
+        <div className="log-overlay" onClick={() => setShowLogModal(false)}>
+          <div className="log-modal card" onClick={e => e.stopPropagation()}>
+            {logSuccess ? (
+              <div className="log-success">
+                <div className="log-success-icon">✅</div>
+                <h3>Logged!</h3>
+                <p>{movie.title} added to your diary</p>
+              </div>
+            ) : (
+              <form onSubmit={submitLog}>
+                <h3 className="log-modal-title">Log <em>{movie.title}</em></h3>
+
+                <label className="log-label">Date watched</label>
+                <input
+                  id="log-date"
+                  type="date"
+                  className="form-input"
+                  value={logDate}
+                  onChange={e => setLogDate(e.target.value)}
+                  required
+                />
+
+                <label className="log-label">Rating</label>
+                <StarRating value={logRating} onChange={setLogRating} />
+
+                <label className="log-label">Review (optional)</label>
+                <textarea
+                  id="log-review"
+                  className="form-input"
+                  placeholder="What did you think?"
+                  value={logReview}
+                  onChange={e => setLogReview(e.target.value)}
+                  rows={3}
+                />
+
+                <label className="log-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={logRewatch}
+                    onChange={e => setLogRewatch(e.target.checked)}
+                  />
+                  <span>I've seen this film before</span>
+                </label>
+
+                {logError && <p className="error-msg">{logError}</p>}
+
+                <div className="log-actions">
+                  <button
+                    type="button"
+                    className="btn btn-ghost"
+                    onClick={() => setShowLogModal(false)}
+                  >Cancel</button>
+                  <button
+                    type="submit"
+                    id="submit-log-btn"
+                    className="btn btn-primary"
+                    disabled={logSubmitting}
+                  >
+                    {logSubmitting ? 'Saving…' : 'Save'}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
