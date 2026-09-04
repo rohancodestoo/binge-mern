@@ -100,6 +100,11 @@ input, textarea { font-family: inherit; }
   border: 1px solid rgba(224,82,82,0.3);
 }
 .btn-danger:hover { background: rgba(224,82,82,0.25); }
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  border-radius: var(--radius-sm);
+}
 
 /* --- Card --- */
 .card {

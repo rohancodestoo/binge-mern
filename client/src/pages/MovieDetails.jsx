@@ -146,6 +146,16 @@ const MovieDetails = () => {
     } finally { setSub(false); }
   };
 
+  const deleteReview = async (reviewId) => {
+    if (!window.confirm('Are you sure you want to delete this review?')) return;
+    try {
+      await api.delete(`/reviews/${reviewId}`);
+      setReviews(reviews.filter(r => r._id !== reviewId));
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to delete review');
+    }
+  };
+
   if (loading) return <div className="spinner" style={{ marginTop: 120 }} />;
   if (!movie)  return <div className="page container"><p>Movie not found.</p></div>;
 
@@ -289,8 +299,15 @@ const MovieDetails = () => {
                       <div className="review-avatar">{r.user?.username?.[0]?.toUpperCase()}</div>
                       <span>{r.user?.username}</span>
                     </Link>
-                    <div className="review-rating">
-                      {'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}
+                    <div className="review-actions">
+                      <div className="review-rating">
+                        {'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}
+                      </div>
+                      {user && user._id === r.user?._id && (
+                        <button className="btn btn-danger btn-sm" onClick={() => deleteReview(r._id)}>
+                          Delete
+                        </button>
+                      )}
                     </div>
                   </div>
                   {r.content && <p className="review-content">{r.content}</p>}

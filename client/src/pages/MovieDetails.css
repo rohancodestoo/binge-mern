@@ -149,6 +149,7 @@
   display: flex; align-items: center; justify-content: center;
   font-weight: 700; font-size: 0.85rem; color: #0d0f14;
 }
+.review-actions { display: flex; align-items: center; gap: 12px; }
 .review-rating { color: var(--accent); font-size: 0.9rem; letter-spacing: 1px; }
 .review-content { color: var(--text-secondary); line-height: 1.7; font-size: 0.95rem; margin-bottom: 10px; }
 .review-date { font-size: 0.78rem; color: var(--text-muted); }

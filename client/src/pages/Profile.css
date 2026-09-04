@@ -126,10 +126,16 @@
   min-width: 0;
 }
 
+.pr-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 5px;
+}
+
 .pr-title {
   font-weight: 600;
   font-size: 0.98rem;
-  margin-bottom: 5px;
   color: var(--text-primary);
 }
 

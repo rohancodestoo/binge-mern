@@ -54,6 +54,17 @@ const Profile = () => {
     } finally { setFollowLoading(false); }
   };
 
+  const deleteReview = async (e, reviewId) => {
+    e.preventDefault();
+    if (!window.confirm('Are you sure you want to delete this review?')) return;
+    try {
+      await api.delete(`/reviews/${reviewId}`);
+      setReviews(reviews.filter(r => r._id !== reviewId));
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to delete review');
+    }
+  };
+
   if (loading) return <div className="spinner" style={{ marginTop: 120 }} />;
   if (!profile) return <div className="page container"><p>User not found.</p></div>;
 
@@ -118,7 +129,14 @@ const Profile = () => {
                     )}
                   </div>
                   <div className="pr-body">
-                    <div className="pr-title">{r.movieTitle}</div>
+                    <div className="pr-title-row">
+                      <div className="pr-title">{r.movieTitle}</div>
+                      {isOwnProfile && (
+                        <button className="btn btn-danger btn-sm" onClick={(e) => deleteReview(e, r._id)}>
+                          Delete
+                        </button>
+                      )}
+                    </div>
                     <div className="pr-rating">{'★'.repeat(r.rating)}{'☆'.repeat(5-r.rating)}</div>
                     {r.content && <p className="pr-content">{r.content.slice(0, 120)}{r.content.length > 120 ? '…' : ''}</p>}
                     <div className="pr-date">{new Date(r.createdAt).toLocaleDateString()}</div>
