@@ -50,6 +50,11 @@ const Navbar = () => {
                   <Link to={`/users/${user.username}`} onClick={() => setMenuOpen(false)} className="dropdown-item">
                     👤 Profile
                   </Link>
+                  {user.role === 'admin' && (
+                    <Link to="/admin" onClick={() => setMenuOpen(false)} className="dropdown-item">
+                      🛡️ Admin Panel
+                    </Link>
+                  )}
                   <button onClick={handleLogout} className="dropdown-item danger">
                     🚪 Sign Out
                   </button>

@@ -47,10 +47,14 @@ const updateReview = async (req, res) => {
     if (review.user.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: 'Not authorized' });
     }
+    if (review.isEdited) {
+      return res.status(400).json({ message: 'Review can only be edited once' });
+    }
     const { rating, content, containsSpoilers } = req.body;
     review.rating = rating ?? review.rating;
     review.content = content ?? review.content;
     review.containsSpoilers = containsSpoilers ?? review.containsSpoilers;
+    review.isEdited = true;
     const updated = await review.save();
     res.json(updated);
   } catch (err) {

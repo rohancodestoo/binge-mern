@@ -9,6 +9,7 @@ import Watchlist from './pages/Watchlist';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import PersonDetails from './pages/PersonDetails';
+import AdminDashboard from './pages/AdminDashboard';
 
 const App = () => (
   <>
@@ -23,6 +24,7 @@ const App = () => (
       <Route path="/login"             element={<Login />} />
       <Route path="/register"          element={<Register />} />
       <Route path="/person/:tmdbId"    element={<PersonDetails />} />
+      <Route path="/admin"             element={<AdminDashboard />} />
     </Routes>
   </>
 );

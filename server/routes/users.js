@@ -5,9 +5,11 @@ const {
   followUser,
   unfollowUser,
   getUserReviews,
+  updateProfile,
 } = require('../controllers/userController');
 const { protect } = require('../middleware/auth');
 
+router.put('/profile', protect, updateProfile);
 router.get('/:username', getUserProfile);
 router.get('/:username/reviews', getUserReviews);
 router.post('/:username/follow', protect, followUser);

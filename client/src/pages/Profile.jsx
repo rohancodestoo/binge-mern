@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import './Profile.css';
 
 const POSTER_BASE = 'https://image.tmdb.org/t/p/w185';
@@ -14,6 +15,16 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [following, setFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
+  
+  const navigate = useNavigate();
+  const { updateUser } = useAuth();
+  
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editUsername, setEditUsername] = useState('');
+  const [editAvatar, setEditAvatar] = useState('');
+  const [editBio, setEditBio] = useState('');
+  const [editLoading, setEditLoading] = useState(false);
+  const [editError, setEditError] = useState('');
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -52,6 +63,36 @@ const Profile = () => {
         }));
       }
     } finally { setFollowLoading(false); }
+  };
+
+  const handleEditProfile = async (e) => {
+    e.preventDefault();
+    setEditLoading(true);
+    setEditError('');
+    try {
+      const { data } = await api.put('/users/profile', {
+        username: editUsername,
+        avatar: editAvatar,
+        bio: editBio,
+      });
+      setProfile({ ...profile, ...data });
+      updateUser({ username: data.username, avatar: data.avatar });
+      setShowEditModal(false);
+      if (data.username !== username) {
+        navigate(`/users/${data.username}`);
+      }
+    } catch (err) {
+      setEditError(err.response?.data?.message || 'Failed to update profile');
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  const openEditModal = () => {
+    setEditUsername(profile.username);
+    setEditAvatar(profile.avatar || '');
+    setEditBio(profile.bio || '');
+    setShowEditModal(true);
   };
 
   const deleteReview = async (e, reviewId) => {
@@ -106,6 +147,14 @@ const Profile = () => {
               {followLoading ? '…' : following ? 'Unfollow' : 'Follow'}
             </button>
           )}
+          {isOwnProfile && (
+            <button
+              className="btn btn-ghost"
+              onClick={openEditModal}
+            >
+              Edit Profile
+            </button>
+          )}
         </div>
 
         {/* Reviews */}
@@ -147,6 +196,50 @@ const Profile = () => {
           )}
         </div>
       </div>
+      
+      {showEditModal && (
+        <div className="log-overlay" onClick={() => setShowEditModal(false)}>
+          <div className="log-modal card" onClick={e => e.stopPropagation()}>
+            <form onSubmit={handleEditProfile}>
+              <h3 className="log-modal-title">Edit Profile</h3>
+              
+              <label className="log-label">Username</label>
+              <input
+                type="text"
+                className="form-input"
+                value={editUsername}
+                onChange={e => setEditUsername(e.target.value)}
+                required
+              />
+              
+              <label className="log-label">Avatar URL (optional)</label>
+              <input
+                type="text"
+                className="form-input"
+                value={editAvatar}
+                onChange={e => setEditAvatar(e.target.value)}
+              />
+              
+              <label className="log-label">Bio (optional)</label>
+              <textarea
+                className="form-input"
+                value={editBio}
+                onChange={e => setEditBio(e.target.value)}
+                rows={3}
+              />
+              
+              {editError && <p className="error-msg">{editError}</p>}
+              
+              <div className="log-actions" style={{ marginTop: '20px' }}>
+                <button type="button" className="btn btn-ghost" onClick={() => setShowEditModal(false)}>Cancel</button>
+                <button type="submit" className="btn btn-primary" disabled={editLoading}>
+                  {editLoading ? 'Saving…' : 'Save'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

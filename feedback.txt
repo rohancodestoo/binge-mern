@@ -1,0 +1,6 @@
+- release date & future dates problem
+- edit and reply to comments/reviews
+- watchlist functionality
+- following and followers
+- edit profile details
+- hashed passwords for admin

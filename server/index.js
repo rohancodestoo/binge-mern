@@ -26,6 +26,7 @@ app.use('/api/watchlist', require('./routes/watchlist'));
 app.use('/api/diary', require('./routes/diary'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/person', require('./routes/person'));
+app.use('/api/admin', require('./routes/admin'));
 
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok', time: new Date() }));

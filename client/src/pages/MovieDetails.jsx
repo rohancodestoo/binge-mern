@@ -43,6 +43,12 @@ const MovieDetails = () => {
   const [submitting, setSub]    = useState(false);
   const [reviewError, setRevErr]= useState('');
 
+  const [editingReviewId, setEditingReviewId] = useState(null);
+  const [editRating, setEditRating] = useState(0);
+  const [editContent, setEditContent] = useState('');
+  const [editSubmitting, setEditSubmitting] = useState(false);
+  const [editError, setEditError] = useState('');
+
   // ── Diary log state ──
   const [showLogModal, setShowLogModal] = useState(false);
   const [logDate, setLogDate]           = useState(new Date().toISOString().slice(0, 10));
@@ -113,6 +119,7 @@ const MovieDetails = () => {
         tmdbId: movie.id,
         movieTitle: movie.title,
         posterPath: movie.poster_path || '',
+        releaseDate: movie.release_date || '',
         watchedOn: logDate,
         rating: logRating || null,
         review: logReview,
@@ -144,6 +151,38 @@ const MovieDetails = () => {
     } catch (err) {
       setRevErr(err.response?.data?.message || 'Failed to submit');
     } finally { setSub(false); }
+  };
+
+  const startEditReview = (review) => {
+    setEditingReviewId(review._id);
+    setEditRating(review.rating);
+    setEditContent(review.content);
+    setEditError('');
+  };
+
+  const cancelEditReview = () => {
+    setEditingReviewId(null);
+    setEditRating(0);
+    setEditContent('');
+    setEditError('');
+  };
+
+  const submitEditReview = async (e, reviewId) => {
+    e.preventDefault();
+    if (!editRating) { setEditError('Please select a rating'); return; }
+    setEditSubmitting(true); setEditError('');
+    try {
+      const { data } = await api.put(`/reviews/${reviewId}`, {
+        rating: editRating,
+        content: editContent,
+      });
+      setReviews(reviews.map(r => r._id === reviewId ? data : r));
+      cancelEditReview();
+    } catch (err) {
+      setEditError(err.response?.data?.message || 'Failed to edit review');
+    } finally {
+      setEditSubmitting(false);
+    }
   };
 
   const deleteReview = async (reviewId) => {
@@ -294,26 +333,56 @@ const MovieDetails = () => {
             ) : (
               reviews.map(r => (
                 <div key={r._id} className="review-card card">
-                  <div className="review-header">
-                    <Link to={`/users/${r.user?.username}`} className="review-author">
-                      <div className="review-avatar">{r.user?.username?.[0]?.toUpperCase()}</div>
-                      <span>{r.user?.username}</span>
-                    </Link>
-                    <div className="review-actions">
-                      <div className="review-rating">
-                        {'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}
-                      </div>
-                      {user && user._id === r.user?._id && (
-                        <button className="btn btn-danger btn-sm" onClick={() => deleteReview(r._id)}>
-                          Delete
+                  {editingReviewId === r._id ? (
+                    <form className="review-form" onSubmit={(e) => submitEditReview(e, r._id)} style={{ padding: 0, boxShadow: 'none' }}>
+                      <StarRating value={editRating} onChange={setEditRating} />
+                      <textarea
+                        className="form-input"
+                        value={editContent}
+                        onChange={e => setEditContent(e.target.value)}
+                        rows={3}
+                        style={{ marginTop: '10px' }}
+                      />
+                      {editError && <p className="error-msg">{editError}</p>}
+                      <div className="log-actions" style={{ marginTop: '10px' }}>
+                        <button type="button" className="btn btn-ghost btn-sm" onClick={cancelEditReview}>Cancel</button>
+                        <button type="submit" className="btn btn-primary btn-sm" disabled={editSubmitting}>
+                          {editSubmitting ? 'Saving…' : 'Save'}
                         </button>
-                      )}
-                    </div>
-                  </div>
-                  {r.content && <p className="review-content">{r.content}</p>}
-                  <div className="review-date">
-                    {new Date(r.createdAt).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' })}
-                  </div>
+                      </div>
+                    </form>
+                  ) : (
+                    <>
+                      <div className="review-header">
+                        <Link to={`/users/${r.user?.username}`} className="review-author">
+                          <div className="review-avatar">{r.user?.username?.[0]?.toUpperCase()}</div>
+                          <span>{r.user?.username}</span>
+                        </Link>
+                        <div className="review-actions">
+                          <div className="review-rating">
+                            {'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}
+                          </div>
+                          {user && user._id === r.user?._id && (
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                              {!r.isEdited && (
+                                <button className="btn btn-ghost btn-sm" onClick={() => startEditReview(r)}>
+                                  Edit
+                                </button>
+                              )}
+                              <button className="btn btn-danger btn-sm" onClick={() => deleteReview(r._id)}>
+                                Delete
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      {r.content && <p className="review-content">{r.content}</p>}
+                      <div className="review-date">
+                        {new Date(r.createdAt).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' })}
+                        {r.isEdited && <span style={{ marginLeft: '8px', fontSize: '0.8rem', opacity: 0.7 }}>(Edited)</span>}
+                      </div>
+                    </>
+                  )}
                 </div>
               ))
             )}
@@ -341,6 +410,8 @@ const MovieDetails = () => {
                   type="date"
                   className="form-input"
                   value={logDate}
+                  min={movie.release_date}
+                  max={new Date().toISOString().slice(0, 10)}
                   onChange={e => setLogDate(e.target.value)}
                   required
                 />

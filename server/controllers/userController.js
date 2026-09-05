@@ -72,4 +72,36 @@ const getUserReviews = async (req, res) => {
   }
 };
 
-module.exports = { getUserProfile, followUser, unfollowUser, getUserReviews };
+// @desc   Update user profile
+// @route  PUT /api/users/profile
+const updateProfile = async (req, res) => {
+  try {
+    const { username, avatar, bio } = req.body;
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    if (username && username !== user.username) {
+      const existing = await User.findOne({ username });
+      if (existing) {
+        return res.status(400).json({ message: 'Username already taken' });
+      }
+      user.username = username;
+    }
+
+    if (avatar !== undefined) user.avatar = avatar;
+    if (bio !== undefined) user.bio = bio;
+
+    const updatedUser = await user.save();
+    res.json({
+      _id: updatedUser._id,
+      username: updatedUser.username,
+      email: updatedUser.email,
+      avatar: updatedUser.avatar,
+      bio: updatedUser.bio,
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+module.exports = { getUserProfile, followUser, unfollowUser, getUserReviews, updateProfile };

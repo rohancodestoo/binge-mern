@@ -13,6 +13,7 @@ const reviewSchema = new mongoose.Schema(
     rating: { type: Number, min: 0.5, max: 5, required: true },
     content: { type: String, default: '', maxlength: 5000 },
     containsSpoilers: { type: Boolean, default: false },
+    isEdited: { type: Boolean, default: false },
     likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   },
   { timestamps: true }

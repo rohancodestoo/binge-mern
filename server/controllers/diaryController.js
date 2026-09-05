@@ -3,8 +3,18 @@ const DiaryEntry = require('../models/DiaryEntry');
 // @desc   Log a watch entry
 // @route  POST /api/diary
 const createEntry = async (req, res) => {
-  const { tmdbId, movieTitle, posterPath, watchedOn, rating, review, rewatch } = req.body;
+  const { tmdbId, movieTitle, posterPath, watchedOn, rating, review, rewatch, releaseDate } = req.body;
   try {
+    if (watchedOn) {
+      const watchDate = new Date(watchedOn);
+      const today = new Date();
+      if (watchDate > today) {
+        return res.status(400).json({ message: 'Watch date cannot be in the future' });
+      }
+      if (releaseDate && watchDate < new Date(releaseDate)) {
+        return res.status(400).json({ message: 'Watch date cannot be earlier than release date' });
+      }
+    }
     const entry = await DiaryEntry.create({
       user: req.user._id,
       tmdbId,
@@ -41,6 +51,18 @@ const updateEntry = async (req, res) => {
     if (entry.user.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: 'Not authorized' });
     }
+    
+    if (req.body.watchedOn) {
+      const watchDate = new Date(req.body.watchedOn);
+      const today = new Date();
+      if (watchDate > today) {
+        return res.status(400).json({ message: 'Watch date cannot be in the future' });
+      }
+      if (req.body.releaseDate && watchDate < new Date(req.body.releaseDate)) {
+        return res.status(400).json({ message: 'Watch date cannot be earlier than release date' });
+      }
+    }
+
     Object.assign(entry, req.body);
     const updated = await entry.save();
     res.json(updated);
