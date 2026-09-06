@@ -6,10 +6,12 @@ const {
   unfollowUser,
   getUserReviews,
   updateProfile,
+  toggleFavorite,
 } = require('../controllers/userController');
 const { protect } = require('../middleware/auth');
 
 router.put('/profile', protect, updateProfile);
+router.post('/favorites', protect, toggleFavorite);
 router.get('/:username', getUserProfile);
 router.get('/:username/reviews', getUserReviews);
 router.post('/:username/follow', protect, followUser);

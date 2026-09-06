@@ -1,6 +1,7 @@
-- release date & future dates problem
-- edit and reply to comments/reviews
+- when a user is selecting a date while logging a movie, he shouldn't be able to select a date earlier than release date of that movie, and a date later than the current date.
+- editing the review (once only.)
 - watchlist functionality
-- following and followers
-- edit profile details
-- hashed passwords for admin
+- edit profile details (setting a profile picture and a username)
+- add an admin system to manage users.
+- storing the user passwords using hashing method, so the admin cannot see them.
+- log repeat + reviews visibility

@@ -10,18 +10,31 @@ const BACKDROP_BASE = 'https://image.tmdb.org/t/p/w1280';
 const StarRating = ({ value, onChange }) => {
   const [hover, setHover] = useState(0);
   const stars = [1, 2, 3, 4, 5];
+
+  const handleMouseMove = (e, s) => {
+    const { left, width } = e.target.getBoundingClientRect();
+    const isLeftHalf = e.clientX - left < width / 2;
+    setHover(isLeftHalf ? s - 0.5 : s);
+  };
+
   return (
     <div className="star-picker">
-      {stars.map(s => (
-        <button
-          key={s}
-          type="button"
-          className={`star-btn ${(hover || value) >= s ? 'active' : ''}`}
-          onMouseEnter={() => setHover(s)}
-          onMouseLeave={() => setHover(0)}
-          onClick={() => onChange(s)}
-        >★</button>
-      ))}
+      {stars.map(s => {
+        const current = hover || value;
+        let className = 'star-btn';
+        if (current >= s) className += ' active';
+        else if (current >= s - 0.5) className += ' half-active';
+        return (
+          <button
+            key={s}
+            type="button"
+            className={className}
+            onMouseMove={(e) => handleMouseMove(e, s)}
+            onMouseLeave={() => setHover(0)}
+            onClick={() => onChange(hover || value)}
+          >★</button>
+        );
+      })}
       {value > 0 && <span className="rating-label">{value}/5</span>}
     </div>
   );
@@ -37,6 +50,8 @@ const MovieDetails = () => {
 
   const [inWatchlist, setInWatchlist] = useState(false);
   const [wlLoading, setWlLoading]     = useState(false);
+  const [isFavorite, setIsFavorite]   = useState(false);
+  const [favLoading, setFavLoading]   = useState(false);
 
   const [rating, setRating]     = useState(0);
   const [content, setContent]   = useState('');
@@ -75,9 +90,15 @@ const MovieDetails = () => {
 
   useEffect(() => {
     if (!user) return;
-    api.get('/watchlist').then(({ data }) => {
-      setInWatchlist(data.some(w => w.tmdbId === parseInt(tmdbId)));
-    }).catch(() => {});
+    const checkStatus = async () => {
+      try {
+        const { data: wlData } = await api.get('/watchlist');
+        setInWatchlist(wlData.some(w => w.tmdbId === parseInt(tmdbId)));
+        const { data: userData } = await api.get(`/users/${user.username}`);
+        setIsFavorite(userData.favorites?.some(f => f.tmdbId === parseInt(tmdbId)));
+      } catch (err) {}
+    };
+    checkStatus();
   }, [user, tmdbId]);
 
   const toggleWatchlist = async () => {
@@ -97,6 +118,23 @@ const MovieDetails = () => {
         setInWatchlist(true);
       }
     } finally { setWlLoading(false); }
+  };
+
+  const toggleFavorite = async () => {
+    if (!user) return;
+    setFavLoading(true);
+    try {
+      const { data } = await api.post('/users/favorites', {
+        tmdbId: movie.id,
+        movieTitle: movie.title,
+        posterPath: movie.poster_path || '',
+      });
+      setIsFavorite(data.favorites.some(f => f.tmdbId === parseInt(tmdbId)));
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to update favorites');
+    } finally {
+      setFavLoading(false);
+    }
   };
 
   // ── Log to Diary ──
@@ -254,6 +292,14 @@ const MovieDetails = () => {
                     onClick={openLogModal}
                   >
                     📖 Log to Diary
+                  </button>
+                  <button
+                    className={`btn ${isFavorite ? 'btn-danger' : 'btn-ghost'}`}
+                    onClick={toggleFavorite}
+                    disabled={favLoading}
+                    style={{ padding: '8px 12px' }}
+                  >
+                    {isFavorite ? '❤️ Favorited' : '🤍 Favorite'}
                   </button>
                   <button
                     id="watchlist-btn"

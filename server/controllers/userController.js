@@ -104,4 +104,33 @@ const updateProfile = async (req, res) => {
   }
 };
 
-module.exports = { getUserProfile, followUser, unfollowUser, getUserReviews, updateProfile };
+// @desc   Toggle a movie in favorites (max 4)
+// @route  POST /api/users/favorites
+const toggleFavorite = async (req, res) => {
+  try {
+    const { tmdbId, movieTitle, posterPath } = req.body;
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const existingIndex = user.favorites.findIndex((f) => f.tmdbId === parseInt(tmdbId));
+    
+    if (existingIndex !== -1) {
+      // Remove from favorites
+      user.favorites.splice(existingIndex, 1);
+      await user.save();
+      return res.json({ message: 'Removed from favorites', favorites: user.favorites });
+    } else {
+      // Add to favorites
+      if (user.favorites.length >= 4) {
+        return res.status(400).json({ message: 'You can only have up to 4 favorites. Please remove one first.' });
+      }
+      user.favorites.push({ tmdbId, movieTitle, posterPath });
+      await user.save();
+      return res.json({ message: 'Added to favorites', favorites: user.favorites });
+    }
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+module.exports = { getUserProfile, followUser, unfollowUser, getUserReviews, updateProfile, toggleFavorite };

@@ -125,10 +125,22 @@
   font-size: 1.6rem;
   color: var(--text-muted);
   cursor: pointer;
-  transition: color var(--transition), transform var(--transition);
+  transition: transform var(--transition);
   line-height: 1;
 }
-.star-btn.active, .star-btn:hover { color: var(--accent); transform: scale(1.15); }
+.star-btn.active { 
+  color: var(--accent); 
+  transform: scale(1.15); 
+}
+.star-btn.half-active {
+  background: linear-gradient(90deg, var(--accent) 50%, var(--text-muted) 50%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  transform: scale(1.15);
+}
+.star-btn:hover {
+  transform: scale(1.15);
+}
 .rating-label {
   margin-left: 8px;
   font-size: 0.85rem;

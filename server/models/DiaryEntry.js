@@ -11,7 +11,7 @@ const diaryEntrySchema = new mongoose.Schema(
     movieTitle: { type: String, required: true },
     posterPath: { type: String, default: '' },
     watchedOn: { type: Date, default: Date.now },
-    rating: { type: Number, min: 0, max: 5, default: null },
+    rating: { type: Number, min: 0.5, max: 5, default: null },
     review: { type: String, default: '', maxlength: 2000 },
     rewatch: { type: Boolean, default: false },
   },

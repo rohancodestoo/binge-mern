@@ -157,6 +157,25 @@ const Profile = () => {
           )}
         </div>
 
+        {/* Top 4 Favorites */}
+        {profile.favorites && profile.favorites.length > 0 && (
+          <div className="profile-section">
+            <h2 className="section-heading">Favorite Films</h2>
+            <div className="favorites-grid" style={{ display: 'flex', gap: '16px' }}>
+              {profile.favorites.map(f => (
+                <Link key={f.tmdbId} to={`/movies/${f.tmdbId}`} className="fav-card" style={{ flexShrink: 0, width: '140px', textDecoration: 'none', color: 'inherit', transition: 'transform 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-4px)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'none'}>
+                  {f.posterPath ? (
+                    <img src={`${POSTER_BASE}${f.posterPath}`} alt={f.movieTitle} style={{ width: '100%', borderRadius: 'var(--radius-md)', border: '2px solid var(--border)', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }} />
+                  ) : (
+                    <div style={{ width: '100%', aspectRatio: '2/3', background: 'var(--bg-card)', borderRadius: 'var(--radius-md)', border: '2px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem' }}>🎬</div>
+                  )}
+                  <div style={{ fontSize: '0.85rem', fontWeight: '600', marginTop: '8px', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{f.movieTitle}</div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Reviews */}
         <div className="profile-section">
           <h2 className="section-heading">{profile.username}'s Reviews ({reviews.length})</h2>

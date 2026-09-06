@@ -39,6 +39,13 @@ const userSchema = new mongoose.Schema(
       enum: ['user', 'admin'],
       default: 'user',
     },
+    favorites: [
+      {
+        tmdbId: Number,
+        movieTitle: String,
+        posterPath: String,
+      },
+    ],
   },
   { timestamps: true }
 );
