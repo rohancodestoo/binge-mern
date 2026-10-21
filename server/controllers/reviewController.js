@@ -56,6 +56,7 @@ const updateReview = async (req, res) => {
     review.containsSpoilers = containsSpoilers ?? review.containsSpoilers;
     review.isEdited = true;
     const updated = await review.save();
+    await updated.populate('user', 'username avatar');
     res.json(updated);
   } catch (err) {
     res.status(500).json({ message: err.message });

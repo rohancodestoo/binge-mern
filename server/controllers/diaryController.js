@@ -52,18 +52,26 @@ const updateEntry = async (req, res) => {
       return res.status(403).json({ message: 'Not authorized' });
     }
     
-    if (req.body.watchedOn) {
-      const watchDate = new Date(req.body.watchedOn);
+    const { watchedOn, rating, review, rewatch, releaseDate, posterPath, movieTitle } = req.body;
+
+    if (watchedOn) {
+      const watchDate = new Date(watchedOn);
       const today = new Date();
       if (watchDate > today) {
         return res.status(400).json({ message: 'Watch date cannot be in the future' });
       }
-      if (req.body.releaseDate && watchDate < new Date(req.body.releaseDate)) {
+      if (releaseDate && watchDate < new Date(releaseDate)) {
         return res.status(400).json({ message: 'Watch date cannot be earlier than release date' });
       }
+      entry.watchedOn = watchedOn;
     }
 
-    Object.assign(entry, req.body);
+    if (rating !== undefined) entry.rating = rating;
+    if (review !== undefined) entry.review = review;
+    if (rewatch !== undefined) entry.rewatch = rewatch;
+    if (posterPath !== undefined) entry.posterPath = posterPath;
+    if (movieTitle !== undefined) entry.movieTitle = movieTitle;
+
     const updated = await entry.save();
     res.json(updated);
   } catch (err) {

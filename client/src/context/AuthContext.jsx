@@ -11,20 +11,26 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     setLoading(true);
-    const { data } = await api.post('/auth/login', { email, password });
-    localStorage.setItem('bingeUser', JSON.stringify(data));
-    setUser(data);
-    setLoading(false);
-    return data;
+    try {
+      const { data } = await api.post('/auth/login', { email, password });
+      localStorage.setItem('bingeUser', JSON.stringify(data));
+      setUser(data);
+      return data;
+    } finally {
+      setLoading(false);
+    }
   };
 
   const register = async (username, email, password) => {
     setLoading(true);
-    const { data } = await api.post('/auth/register', { username, email, password });
-    localStorage.setItem('bingeUser', JSON.stringify(data));
-    setUser(data);
-    setLoading(false);
-    return data;
+    try {
+      const { data } = await api.post('/auth/register', { username, email, password });
+      localStorage.setItem('bingeUser', JSON.stringify(data));
+      setUser(data);
+      return data;
+    } finally {
+      setLoading(false);
+    }
   };
 
   const logout = () => {

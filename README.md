@@ -102,6 +102,37 @@ npm run dev
 
 ---
 
+## 🧪 Testing
+
+The project includes automated integration and unit test suites across both backend and frontend.
+
+### Backend Tests (Jest + Supertest)
+Runs full API integration tests covering Auth, Reviews, Diary, Watchlist, User Profiles, and Admin cascading logic against an isolated test database:
+
+```bash
+cd server
+npm test
+```
+
+To run a specific test suite:
+```bash
+npm test -- tests/auth.test.js
+npm test -- tests/reviews.test.js
+npm test -- tests/diary.test.js
+npm test -- tests/users.test.js
+npm test -- tests/watchlist.test.js
+```
+
+### Frontend Tests (Vitest)
+Runs client unit tests covering utilities and component logic:
+
+```bash
+cd client
+npm test
+```
+
+---
+
 ## 📡 API Endpoints
 
 <details>

@@ -5,3 +5,4 @@
 - add an admin system to manage users.
 - storing the user passwords using hashing method, so the admin cannot see them.
 - log repeat + reviews visibility
+------------------------------------------------------------------------------------

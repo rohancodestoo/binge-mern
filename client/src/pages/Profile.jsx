@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { renderStars } from '../utils/stars';
 import './Profile.css';
 
 const POSTER_BASE = 'https://image.tmdb.org/t/p/w185';
@@ -29,18 +30,21 @@ const Profile = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       setLoading(true);
-      const [{ data: p }, { data: r }] = await Promise.all([
-        api.get(`/users/${username}`),
-        api.get(`/users/${username}/reviews`),
-      ]);
-      setProfile(p);
-      setReviews(r);
-      if (user) {
-        setFollowing(p.followers?.some(f => f._id === user._id));
+      try {
+        const { data: p } = await api.get(`/users/${username}`);
+        setProfile(p);
+        if (user) {
+          setFollowing(p.followers?.some(f => f._id === user._id));
+        }
+        const { data: r } = await api.get(`/users/${username}/reviews`);
+        setReviews(r);
+      } catch {
+        // Profile not found or network error — profile stays null
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
-    fetchProfile().catch(() => setLoading(false));
+    fetchProfile();
   }, [username, user]);
 
   const handleFollow = async () => {
@@ -205,7 +209,7 @@ const Profile = () => {
                         </button>
                       )}
                     </div>
-                    <div className="pr-rating">{'★'.repeat(r.rating)}{'☆'.repeat(5-r.rating)}</div>
+                    <div className="pr-rating">{renderStars(r.rating)}</div>
                     {r.content && <p className="pr-content">{r.content.slice(0, 120)}{r.content.length > 120 ? '…' : ''}</p>}
                     <div className="pr-date">{new Date(r.createdAt).toLocaleDateString()}</div>
                   </div>

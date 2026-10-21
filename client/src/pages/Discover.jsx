@@ -11,24 +11,31 @@ const Discover = () => {
   const [page, setPage]       = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [error, setError]     = useState(null);
   const [mode, setMode]       = useState('popular'); // 'popular' | 'search'
 
   const fetchPopular = useCallback(async (p = 1) => {
     setLoading(true);
+    setError(null);
     try {
       const { data } = await api.get(`/movies/popular?page=${p}`);
       setMovies(data.results || []);
       setTotalPages(Math.min(data.total_pages, 500));
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to load movies. Please try again.');
     } finally { setLoading(false); }
   }, []);
 
   const fetchSearch = useCallback(async (q, p = 1) => {
     if (!q.trim()) return;
     setLoading(true);
+    setError(null);
     try {
       const { data } = await api.get(`/movies/search?q=${encodeURIComponent(q)}&page=${p}`);
       setMovies(data.results || []);
       setTotalPages(Math.min(data.total_pages, 500));
+    } catch (err) {
+      setError(err.response?.data?.message || 'Search failed. Please try again.');
     } finally { setLoading(false); }
   }, []);
 
@@ -85,6 +92,13 @@ const Discover = () => {
 
         {loading ? (
           <div className="spinner" />
+        ) : error ? (
+          <div className="empty-state">
+            <div className="empty-state-icon">⚠️</div>
+            <h3>Something went wrong</h3>
+            <p>{error}</p>
+            <button className="btn btn-primary" style={{ marginTop: 16 }} onClick={() => mode === 'search' ? fetchSearch(query, page) : fetchPopular(page)}>Retry</button>
+          </div>
         ) : movies.length === 0 ? (
           <div className="empty-state">
             <div className="empty-state-icon">🔍</div>

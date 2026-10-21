@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
+import { renderStars } from '../utils/stars';
 import './MovieDetails.css';
 
 const POSTER_BASE   = 'https://image.tmdb.org/t/p/w500';
@@ -406,7 +407,7 @@ const MovieDetails = () => {
                         </Link>
                         <div className="review-actions">
                           <div className="review-rating">
-                            {'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}
+                            {renderStars(r.rating)}
                           </div>
                           {user && user._id === r.user?._id && (
                             <div style={{ display: 'flex', gap: '8px' }}>

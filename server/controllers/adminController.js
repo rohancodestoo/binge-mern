@@ -1,4 +1,7 @@
 const User = require('../models/User');
+const Review = require('../models/Review');
+const DiaryEntry = require('../models/DiaryEntry');
+const Watchlist = require('../models/Watchlist');
 
 // @desc   Get all users
 // @route  GET /api/admin/users
@@ -24,6 +27,21 @@ const deleteUser = async (req, res) => {
       return res.status(400).json({ message: 'You cannot delete yourself' });
     }
     
+    // Clean up all related data
+    await Promise.all([
+      Review.deleteMany({ user: user._id }),
+      DiaryEntry.deleteMany({ user: user._id }),
+      Watchlist.deleteMany({ user: user._id }),
+      User.updateMany(
+        { followers: user._id },
+        { $pull: { followers: user._id } }
+      ),
+      User.updateMany(
+        { following: user._id },
+        { $pull: { following: user._id } }
+      ),
+    ]);
+
     await user.deleteOne();
     res.json({ message: 'User removed' });
   } catch (err) {

@@ -21,7 +21,7 @@ const getUserProfile = async (req, res) => {
 // @route  POST /api/users/:username/follow
 const followUser = async (req, res) => {
   try {
-    const target = await User.findOne({ username: req.params.username });
+    const target = await User.findOne({ username: req.params.username }).select('-password');
     if (!target) return res.status(404).json({ message: 'User not found' });
     if (target._id.toString() === req.user._id.toString()) {
       return res.status(400).json({ message: 'You cannot follow yourself' });
@@ -29,8 +29,9 @@ const followUser = async (req, res) => {
     if (target.followers.includes(req.user._id)) {
       return res.status(400).json({ message: 'Already following' });
     }
-    target.followers.push(req.user._id);
-    await target.save();
+    await User.findByIdAndUpdate(target._id, {
+      $addToSet: { followers: req.user._id },
+    });
     await User.findByIdAndUpdate(req.user._id, {
       $addToSet: { following: target._id },
     });
@@ -44,12 +45,11 @@ const followUser = async (req, res) => {
 // @route  DELETE /api/users/:username/follow
 const unfollowUser = async (req, res) => {
   try {
-    const target = await User.findOne({ username: req.params.username });
+    const target = await User.findOne({ username: req.params.username }).select('-password');
     if (!target) return res.status(404).json({ message: 'User not found' });
-    target.followers = target.followers.filter(
-      (id) => id.toString() !== req.user._id.toString()
-    );
-    await target.save();
+    await User.findByIdAndUpdate(target._id, {
+      $pull: { followers: req.user._id },
+    });
     await User.findByIdAndUpdate(req.user._id, {
       $pull: { following: target._id },
     });
